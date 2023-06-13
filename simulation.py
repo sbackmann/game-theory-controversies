@@ -4,19 +4,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Define the population
-population_size = 1000
+population_size = 10000
 population = pd.DataFrame({'state': ['susceptible'] * population_size})
 
 # Define the parameters
-infection_probability = 0.05
+infection_probability = [np.random.normal(loc=np.sin(i/10)/50, scale=0.01) for i in range(100)]
 recovery_probability_infected = 0.05  # Recovery probability for infected individuals
 recovery_probability_severe = 0.05  # Recovery probability for severely infected individuals
 recovery_probability_hospitalized = 0.2  # Recovery probability for hospitalized individuals
 severe_probability = 0.2  # Probability of transitioning from infected to severely infected
-hospital_capacity = 120  # Maximum capacity of hospitalized individuals
-lethality_probability_severe = 0.1  # Probability of dying for severely infected individuals
-lethality_probability_hospitalized = 0.02  # Probability of dying for hospitalized individuals
-num_time_steps = 100
+hospital_capacity = 200  # Maximum capacity of hospitalized individuals
+lethality_probability_severe = 0.05  # Probability of dying for severely infected individuals
+lethality_probability_hospitalized = 0.01  # Probability of dying for hospitalized individuals
+num_time_steps = len(infection_probability)  # Number of time steps to simulate
 
 # Track statistics
 susceptible_count = []
@@ -27,10 +27,9 @@ dead_count = []
 recovered_count = []
 
 # Simulation loop
-for _ in range(num_time_steps):
+for i in range(num_time_steps):
     # Count the number of individuals in each state
     state_counts = population['state'].value_counts()
-    print(state_counts)
 
     # Track the counts of each state
     susceptible_count.append(state_counts.get('susceptible', 0))
@@ -45,7 +44,7 @@ for _ in range(num_time_steps):
 
     # Check if susceptible individuals get infected
     susceptible_mask = (population['state'] == 'susceptible')
-    infected_mask = (random_numbers < infection_probability)
+    infected_mask = (random_numbers < infection_probability[i])
     population.loc[susceptible_mask & infected_mask, 'state'] = 'infected'
     random_numbers = np.random.random(population_size)
     
@@ -61,15 +60,9 @@ for _ in range(num_time_steps):
     random_numbers = np.random.random(population_size)
     dead_mask = (random_numbers < lethality_probability_severe)
     # print(np.logical_or(hospitalized_mask, dead_mask))
-    state_counts_2 = population['state'].value_counts()
-    print("severe", state_counts_2)
     population.loc[np.logical_and(severe_infected_mask, hospitalized_mask), 'state'] = 'hospitalized'
-    state_counts_2 = population['state'].value_counts()
-    print("hospitalize", state_counts_2)
     severe_infected_mask = (population['state'] == 'severely infected')
     population.loc[np.logical_and(severe_infected_mask, dead_mask), 'state'] = 'dead'
-    state_counts_2 = population['state'].value_counts()
-    print("dead", state_counts_2)
     random_numbers = np.random.random(population_size)
 
     # Check if hospitalized individuals recover or die
@@ -88,13 +81,13 @@ for _ in range(num_time_steps):
 
 # Plot the epidemic progression
 time_steps = range(num_time_steps)
-plt.plot(time_steps, susceptible_count, label='Susceptible')
-plt.plot(time_steps, infected_count, label='Infected')
-plt.plot(time_steps, severely_infected_count, label='Severely Infected')
-plt.plot(time_steps, hospitalized_count, label='Hospitalized')
-plt.plot(time_steps, dead_count, label='Dead')
-plt.plot(time_steps, recovered_count, label='Recovered')
+plt.semilogy(time_steps, susceptible_count, label='Susceptible')
+plt.semilogy(time_steps, infected_count, label='Infected')
+plt.semilogy(time_steps, severely_infected_count, label='Severely Infected')
+plt.semilogy(time_steps, hospitalized_count, label='Hospitalized')
+plt.semilogy(time_steps, dead_count, label='Dead')
+plt.semilogy(time_steps, recovered_count, label='Recovered')
 plt.xlabel('Time Steps')
-plt.ylabel('Population Count')
+plt.ylabel('Population Count (Log Scale)')
 plt.legend()
 plt.show()
