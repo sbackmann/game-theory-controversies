@@ -60,7 +60,6 @@ for i in range(num_time_steps):
         # Check if individuals decide to get deliberately infected
         low_hospital_utilization = ((population_counts[population_type]["hospitalized"][-1]) / hospital_capacity) < 0.5  # Define the threshold for low utilization
         susceptible_mask = (population['state'] == 'susceptible')
-        random_numbers = np.random.random(population_size)
         deliberate_infection_mask = (random_numbers < population["infection_willingness"]) & low_hospital_utilization
         population.loc[susceptible_mask & deliberate_infection_mask, 'state'] = 'infected'
         population.loc[susceptible_mask & deliberate_infection_mask, 'infection_type'] = 'deliberate'
@@ -108,6 +107,7 @@ for i in range(num_time_steps):
                 counts.append(0)
 
 
+print(populations["deliberate"]["infection_type"].value_counts())
 
 # Plot the epidemic progression
 time_steps = range(num_time_steps + 1)
