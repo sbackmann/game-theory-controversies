@@ -32,7 +32,7 @@ population_counts = {
 }
 
 # Define the parameters
-infection_probability = [np.random.normal(loc=np.sin(i/10)/50, scale=0.01) for i in range(100)]
+# infection_probability = [np.random.normal(loc=np.sin(i/10)/50, scale=0.01) for i in range(100)]
 recovery_probability_infected = 0.05  # Recovery probability for infected individuals
 recovery_probability_severe = 0.05  # Recovery probability for severely infected individuals
 recovery_probability_hospitalized = 0.2  # Recovery probability for hospitalized individuals
@@ -40,19 +40,23 @@ severe_probability = 0.2  # Probability of transitioning from infected to severe
 hospital_capacity = 200  # Maximum capacity of hospitalized individuals
 lethality_probability_severe = 0.05  # Probability of dying for severely infected individuals
 lethality_probability_hospitalized = 0.01  # Probability of dying for hospitalized individuals
-num_time_steps = len(infection_probability)  # Number of time steps to simulate
+num_time_steps = 200  # Number of time steps to simulate
 
 
 # Simulation loop
 for i in range(num_time_steps):
     for population_type, population in populations.items():
+        active_population = population_counts[population_type]['susceptible'][-1] + population_counts[population_type]['infected'][-1] + population_counts[population_type]['severely_infected'][-1] + population_counts[population_type]['recovered'][-1]
+        infection_probability = np.random.normal(loc=np.sin(i/10)/50, scale=0.01) \
+                                * (1 + (population_counts[population_type]["infected"][-1] + population_counts[population_type]["severely_infected"][-1]) / active_population) \
+                                * (1-population_counts[population_type]["recovered"][-1] / active_population)
 
         # Generate random numbers for state transitions
         random_numbers = np.random.random(population_size)
 
         # Check if susceptible individuals get infected
         susceptible_mask = (population['state'] == 'susceptible')
-        infected_mask = (random_numbers < infection_probability[i])
+        infected_mask = (random_numbers < infection_probability)
         population.loc[susceptible_mask & infected_mask, 'state'] = 'infected'
         population.loc[susceptible_mask & infected_mask, 'infection_type'] = 'chance'
         random_numbers = np.random.random(population_size)
