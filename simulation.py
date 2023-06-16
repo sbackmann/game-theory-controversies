@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 population_size = 10000
 population = pd.DataFrame({'state': ['susceptible'] * population_size})
 
-infection_willingness = 0.0
+infection_willingness = 0.3
 num_deliberate = int(population_size * infection_willingness)
-factor_deliberate = 4
+factor_deliberate = 10
 
 # Track statistics for each population
 population_counts = {
@@ -48,9 +48,9 @@ num_time_steps = 200  # Number of time steps to simulate
 for i in range(num_time_steps):
     active_population = population_counts['deliberate']['susceptible'][-1] + population_counts['deliberate']['infected'][-1] + population_counts['deliberate']['severely_infected'][-1] + population_counts['deliberate']['recovered'][-1] \
                         + population_counts['chance']['susceptible'][-1] + population_counts['chance']['infected'][-1] + population_counts['chance']['severely_infected'][-1] + population_counts['chance']['recovered'][-1]
-    infection_probability = np.random.normal(loc=np.sin(i/10)/50, scale=0.01) \
+    infection_probability = 0.05 * np.random.normal(loc=np.sin(i/10)/50, scale=0.01) \
                             * (1 + (population_counts['deliberate']["infected"][-1] + population_counts['deliberate']["severely_infected"][-1] + population_counts['chance']['infected'][-1] + population_counts['chance']['severely_infected'][-1]) / active_population) \
-                            * (1 - (population_counts['deliberate']["recovered"][-1] + population_counts['chance']['recovered'][-1] ) / active_population)
+                            * (1 - (population_counts['deliberate']["recovered"][-1] + population_counts['chance']['recovered'][-1] ) / active_population)**15
     # Generate random numbers for state transitions
     random_numbers = np.random.random(population_size)
 
@@ -151,18 +151,5 @@ axes[1].legend()
 axes[1].set_yscale('log')
 
 plt.tight_layout()
+# plt.savefig("./plots/recovery_premium_simulation.pdf")
 plt.show()
-
-
-deliberate_dead = population_counts['deliberate']['dead'][-1]
-chance_dead = population_counts['chance']['dead'][-1]
-
-deliberate = infection_willingness * population_size
-chance = (1 - infection_willingness) * population_size
-
-print("Deliberate dead: ", deliberate_dead/deliberate)
-print("deliberate ", deliberate)
-print("deliberate dead ", deliberate_dead)
-print("chance ", chance)
-print("Chance dead: ", chance_dead/chance)
-print("Total dead: ", (deliberate_dead + chance_dead)/(deliberate + chance))
