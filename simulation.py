@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 population_size = 10000
 population = pd.DataFrame({'state': ['susceptible'] * population_size})
 
-infection_willingness = 0.5
+infection_willingness = 0.0
 num_deliberate = int(population_size * infection_willingness)
 factor_deliberate = 4
 
@@ -152,3 +152,17 @@ axes[1].set_yscale('log')
 
 plt.tight_layout()
 plt.show()
+
+
+deliberate_dead = population_counts['deliberate']['dead'][-1]
+chance_dead = population_counts['chance']['dead'][-1]
+
+deliberate = infection_willingness * population_size
+chance = (1 - infection_willingness) * population_size
+
+print("Deliberate dead: ", deliberate_dead/deliberate)
+print("deliberate ", deliberate)
+print("deliberate dead ", deliberate_dead)
+print("chance ", chance)
+print("Chance dead: ", chance_dead/chance)
+print("Total dead: ", (deliberate_dead + chance_dead)/(deliberate + chance))
