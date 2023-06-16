@@ -6,7 +6,7 @@ recovery_probability_severe = 0.005
 recovery_probability_hospitalized = 0.5
 severe_probability = 0.2 
 hospital_capacity = 200  
-lethality_probability_severe = 0.05  
+lethality_probability_severe = 0.3  
 lethality_probability_hospitalized = 0.01  
 num_time_steps = 200
 
@@ -14,9 +14,9 @@ cycles = 4
 factor_rec = 15
 num_recovered = 0
 
-share_deliberate = 0.5
+share_deliberate = 0.3
 
-deliberate_willingsness = 5
+deliberate_willingsness = 10
 
 deliberate_mask = np.zeros((10000, ))
 deliberate_mask[:int(share_deliberate * 10000)] = 1

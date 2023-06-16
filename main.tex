@@ -1,0 +1,210 @@
+\documentclass[]{article}
+\usepackage[margin=1.5in, headheight=22.54448pt]{geometry}
+\usepackage[bottom, flushmargin]{footmisc}
+\RequirePackage{fix-cm}
+\usepackage{fancyhdr}
+\setlength{\parindent}{0pt} % space at start of new paragraph
+\setlength{\parskip}{0.14in} % space between paragraphs
+%\pagenumbering{gobble} % comment out this line to use page numbers
+
+% packages vital for various things
+\usepackage{hyperref} % creating links
+\usepackage{comment} % commenting out a large chunk
+\usepackage{enumitem} % lists
+\usepackage{graphicx} % graphics, especially external ones
+\usepackage{pdfpages} % to include external PDFs
+\usepackage{amsmath} % writing math
+\usepackage{amssymb} % writing symbols
+\usepackage{cleveref}
+% tikz-related packages
+\usepackage{tikz}
+\usetikzlibrary{hobby}
+\usetikzlibrary{calc,intersections,through,backgrounds,matrix,patterns}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{decorations.markings}
+\usepackage[normalem]{ulem}
+
+\usepackage[percent]{overpic}
+\usepackage[
+backend=biber,
+style=alphabetic,
+sorting=ynt
+]{biblatex}
+
+\addbibresource{mybibliography.bib}
+% for use in tables
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{array}
+\newcommand\bstrut{\rule{0pt}{3ex}} % space before row
+\newcommand\astrut{\rule[-1.5ex]{0pt}{0pt}} % space after row
+
+
+
+
+\begin{document}
+
+\pagestyle{fancy}
+\lhead{Steffen Backmann, ETH Zürich\\Timur Levent Kesdogan, ETH Zürich}
+\rhead{Controversies in Game Theory\\Final Report}
+
+\begin{center}
+    \LARGE{Nash's anatomy\\}
+    \large{or when to get sick during a pandemic\\}
+    \small{\href{https://github.com/sbackmann/game-theory-controversies}{Github repository}}
+\end{center}
+
+
+\section{Introduction}
+A pandemic poses severe strains on public health and human well-being - though unevenly distributed over the population and over time. As could be observed in the past pandemic (whose name shall not be mentioned), hospital capacities reached a breaking point during winter months while being more relaxed in summer. At the same time, uninfected humans were constantly in fear of infection during winter, with little medical staff available to treat them, being prone to catching the virus given their lack of immunization during the previous summer. Would rational Economic agents allow for such waste of personal utility and spare public health capacity? 
+
+Our findings show that under certain circumstances, it is very much socially beneficial to have a group of individuals consciously seeking out infections. While not robust to all possible circumstances of a pandemic, this does offer a differing perspective on the long held view, that individuals can themselves contribute to public health by acting in a self-interested way. 
+
+Our game and its results are not pareto-improving, throwing open the ethical issue of implementing the decision making necessary for individuals in order to achieve our results. 
+
+In the following, we will investigate this issue via simulation. For that purpose, we will first compile an overview of pandemic characteristics. Given this, we will motivate our own assumptions and configurations for the simulation. We will mark out the differences between our approach and that of previous research. We will describe in short the structure and execution of our simulation. Finally, we will analyse the results of our simulation and relate them to the general public health response. 
+
+\section{Disease dynamics}
+\textbf{Spread of the virus}\newline
+The spread of a pandemic level disease hinges on humans taking over the role of infection carriers \cite{fang2020transmission}. Without humans to get sick and infect others, pandemics would be short-lived or not even get started. Hence, limiting the transmission probability is paramount to containing a rapid spread of a pandemic. 
+
+An effective mechanism is social distancing. Here, people abstain from coming in close contact with others and limit the number of in-person interactions. A large number of factors are at play, when dealing with in how far distancing is a possible and bearable solution. Two major factors here are seasonality and personal responsibility. Winters prompt people to huddle up in smaller, confined spaces where transmission via inhalation of the same air is easy, while immune system capacities are already dampened through cold and other diseases. This does not hold for summer, where people are spaced further apart and often outside. Personal responsibility on the side of individuals is also key, as in democracies draconian measures to monitor every movement of its citizens is near impossible, leaving plenty of room for individuals to break distancing rules and engage in larger gatherings beneficial for the spread of the disease.\newline 
+A larger pool of individuals which are immune to the disease and therefore cannot act as a spreader nor as a potentially infected person, is also beneficial. Here, an immune person, whether immune through a previous infection or a man-made immunization, is able to act as a stop-gate, not allowing the disease to use its body as a further vantage point for further spreading. This of course rests on the assumption that a once infected person cannot be infected again, which -- depending on the disease -- is not necessarily the case.\newline 
+Lastly, the current state of disease spread is of course most indicative of future values. While a ubiquitous presence of the disease makes it highly likely for an individual to catch, even when trying their best to avoid it, a small or geographically concentrated outbreak means that near future infection rates can be expected to remain low. This auto-regressive feature makes current changes to disease control highly impactful for the future. \newline
+All of these features of controlling the outbreak of a pandemic disease have been proven to be significant and have had real-life contributions to the differing tales of individual countries \cite{fanelli2020analysis}. 
+
+\textbf{Hospital care}\newline
+Once seriously sick, it is vital to treat patients in hospitals. Health benefits from being treated in hospitals with modern equipment and medicine are significant compared to being left alone \cite{beigel2020remdesivir}. However, hospitals and a modern health care system are not limitless, hence capacity issues in case of a country wide pandemic arise \cite{ranney2020critical}. In general, it is safe to say, that given enough hospital capacity, the risk of an individual infection is significantly lower than when capacity is at a breaking point. 
+
+\textbf{Indirect effects of containment}\newline
+While containing strategies as explained can be effective, the end-result for society can still look bleak, when shifting focus from a hard figure such as death-tolls, to include other forms of diseases, mainly mental-health diseases. Here, the stress and exertion with worrying about getting sick and loosing loved ones, in addition to the loss of social contacts, has deep impacts on a person's well-being \cite{pfefferbaum2020mental}. 
+
+\section{Parameters of simulation and definitions}
+\label{sec/params}
+
+We take the considerations from the evidence presented beforehand, to model the individual specificities of our simulation. 
+
+\textbf{Payoffs}\newline
+We assume that immunization is highly profitable, as it allows for a normal life without fear of disease and infecting others. 
+
+\textbf{Agents} \newline 
+We have two types of agents in our game: one is a passive individual, whose actions do not depend on the time, but who rather just avoids infections and lives day to day conforming to the status quo. 
+$$a^{(1)}(t) = a^{(1)}$$
+To make the game interesting, we need a second player, one that is more dynamic. Our second player has only two actions to choose from, $low\textrm{-}risk$: Adhere to the status quo and risk an infection with the same chance as that of players of status one, or $risky$: Deliberately seek an infection with the consequences of such as well. The choice of the player hinges on external conditions, which we will dive into next.
+$$a^{(2)}(t) = \left\{ 
+  \begin{array}{ c l }
+    risky & \quad \textrm{if risk conditions fulfilled} \\
+    low\textrm{-}risk & \quad \textrm{otherwise}
+  \end{array}
+\right.$$
+The hyperparameter $y$ determines the proportion of the overall population that are type 2 agents.
+
+\textbf{Conditions for risky behaviour} \newline
+In times of low hospital utilization, type 2 agents are actively seeking for an infection to maximize their own well-being. The rationale is that during times where the current hospital utilization $c_t$ is low, the risk for an agent's own health that comes with catching an infection is significantly lower than in times where hospitals are operating at their maximum capacity $C$. Agents catching the disease while hospital utilization is low can rely on being treated, thus reducing the risk of death. Thus we can formalize the behaviour of type 2 agents.
+$$a^{(2)}(t) = \left\{ 
+  \begin{array}{ c l }
+    risky & \quad \textrm{if } c_t < 0.5 \cdot C \\
+    low\textrm{-}risk                 & \quad \textrm{otherwise}
+  \end{array}
+\right.$$
+
+\textbf{States and transitions} \newline
+An agent can be in one of six mutually exclusive states:
+\begin{enumerate}
+    \item \textit{Susceptible}: All agents start in the state susceptible, meaning they are healthy, never caught an infection and are still exposed to it.
+    \item \textit{Infected}: Agents can transition from the state susceptible to the state infected with a certain infection probability, which will be more thoroughly explained in the next paragraph.
+    \item \textit{Severely Infected}: From being infected, agents can either transition into the recovered state or the severely infected state. Within one iteration, an infection turns severe with probability $s$.
+    \item \textit{Hospitalized}: Agents in the state severely infected automatically transition into the state hospitalized as long as the maximum hospital capacity $C$ is not reached. Otherwise they remain in the state severely infected.
+    \item \textit{Dead}: Both agents in the state severely infected and hospitalized can transition into the final state dead, albeit with differing transition probabilities $d_s$ for severely infected agents and $d_h$ for hospitalized agents.
+    \item \textit{Recovered}: Agents in the states infected, severely infected and hospitalized can transition into the state recovered with respective probabilities $r_i$, $r_s$ and $r_h$. Recovered agents remain in the state for the rest of the simulation and are immune.
+\end{enumerate}
+
+\textbf{Infection probability}\newline
+For agents in the state susceptible, the infection probability depends on the time step, the proportion of infected people, the proportion of recovered people and the agent type. To simulate a seasonal infection risk we employ a sinus based probability development. For agents of type 1 we thus have
+$$p^{(1)}(t) = z(t) \cdot \left(1+\frac{\#I_t+\#SI_t}{\#S_t+\#I_t+\#SI_t+\#R_t}\right) \cdot \left(1-\frac{\#R_t}{\#S_t+\#I_t+\#SI_t+\#R_t}\right)^{w_r}$$
+where $\#S_t$, $\#I_t$, $\#SI_t$ and $\#R_t$ are the number of agents that are in the state susceptible, infected, severely infected and recovered, respectively in the current iteration $t$ and where
+$$z(t) \sim \mathcal{N}\left(\frac{\sin(\frac{t}{10})}{50}, 0.01^2\right).$$
+For agents of type 2 the infection probability is identical as long as they operate in the low-risk mode. In the risky mode however the infection probability is multiplied with the risk factor $f$.
+$$p^{(2)}(t) = \left\{ 
+  \begin{array}{ c l }
+    f \cdot p^{(1)}(t) & \quad \textrm{if } a^{(2)}(t)=risky \\
+    p^{(1)}(t)                 & \quad \textrm{otherwise}
+  \end{array}
+\right.$$
+
+
+\textbf{Definitions}\newline
+Some definitions from game theory and cost-benefit analysis need to be adjusted and specified for our particular simulation case. \newline
+\textit{Social benefit}: For our case, we assume that a policy or behavioural norm among individuals results in a positive net social benefit, if death rates are lower than without such policy or behaviour. This includes all population groups and does not consider differing benefits or costs to different population groups. Our motivation for this definition is rooted in the assumption, that policy makers and society as a whole consider a reduction in the death rate as the ultimate goal of pandemic management.  \newline
+\textit{Pareto-improvement}: We are more granular when it comes to different population groups and consider a policy as pareto-improving only, if it results in lower death rates for all population groups. This specifically aims to make sure, that actions by the dynamic agents do not imperil the well-being of the non-dynamic agents. 
+
+
+\section{Comparison with existing research}
+There has been copious amounts of research with regards to pandemic spread in the wake of the past 3 years. Some has also focused on incorporating the behaviour and self-control of individuals into the process of pandemic spread \cite{gosak2021endogenous}, \cite{kleczkowski2015spontaneous}. Our project differs from all these previous missions in certain aspects: 
+\begin{enumerate}
+    \item We specifically distinguish between agents which are aware of their action space and agents that are non-dynamic. This is inspired by a New-Keynesian hand-to mouth consumer \cite{gabaix2020behavioral}. This approach, which has not been explored before, allows us to analyse, in how far the pervasiveness of dynamic individuals in the population can effect and potentially \textit{improve} the chances of pareto-improvement.
+
+    \item We add a rudimentary hospitalization model to our simulation. This provides a more holistic approach of the different stages of a pandemic illness, from a light infection to a more severe illness which necessitates hospital treatment. Hence, we can quantify agents perishing as a severe illnesses being left untreated instead of a simple consequence of a regular infection. 
+
+    \item We incorporate macro-economic conditions, including seasonality and hospital capacity, into the decision making framework of the dynamic agents. While on the individual level, the decision making process is not as finely modelled and elaborated upon as in other work \cite{gosak2021endogenous}, the consideration of hospital capacity and the overall risk for infection is a new dimension that gives more depth to our model. Given the self-focused nature of these considerations, it also opens up the idea of an \textit{invisible hand} allowing for the self regulation of health care capacity through individual action. Our agents do not consider the well-being of their peers, but rather infect themselves with the motive of personal utilitarian gain. 
+
+    
+
+\end{enumerate}
+\section{Simulation execution}
+Our simulation works with a population $P$ of $10,000$ people, each of whom are divided into agent 1 or agent 2 type actors, given the hyperparameter $y$. We then iterate 200 times and update the state of the individuals based on the boundary probabilities of our model, as explained in the above equations [\ref{sec/params}]. These 200 iterations can be understood to be days, weeks or just random discrete time steps and are adjustable.
+
+In each iteration the infection probability is computed, the state transitions are simulated based on the various probabilities that are assigned to each of them and the hospital utilization as well as the state counts are updated.
+
+The state of the model is saved for each time step and used to calculate the final statistics at the end of the process. The method is not interactive but can be repeated easily multiple times in order to explore settings with different hyperparameters. 
+
+We program the simulation using \verb|python| and the \verb|numpy| library. Here, we make use of the parallelization implemented via \verb|numpy| and thus allowing us to perform multiple calculations at once on the CPU. Plots are implemented using \verb|matplotlib|. 
+
+\section{Analysis}
+A generic simulation result can be seen in figure \Cref{fig:generic}. The two distinct groups within the population evolve in similar but still separate ways. For both, as time passes by, the amount of susceptible individuals decreases, while recovered and dead individuals increase. The infection rate rises and falls over the period, which can be seen from the increasing and decreasing infection rate, and the connected severe infection and hospitalization rate. The generic model does not offer great insight, as it uses random parameters on hospitalization fatality, severe infection likelihood and other external hyper-parameters. What we would like to analyse, is in how far the outcome changes if we tune certain parameters, \textit{ceteris paribus}. 
+\input{plots/generic.tex}
+
+
+If we up the multiplier $f \uparrow$ of agent 2 individuals getting infected (above the normal infection risk encountered by everyone) from $2$ to $4$ - i.e., individuals can deliberately increase their chances fourfold if they try to get infected - we get the results in figure \Cref{fig:deliberate}. It can be seen, that the infections are much more concentrated in the section of the deliberate individuals, whereas agent 1 individuals are much less likely to get infected now. This also is reflected in the mortality rate - we have a higher death rate for group 2 than for group 1. In fact, group 1 has a lower death rate than even \textit{without} the deliberate group, meaning that the benefits of having an additional group where individuals are seeking out the illness is beneficial for the passive group. 
+\input{plots/high_deliberate}
+
+
+Is there even a scenario, where the presence of an additional group can be beneficial for all individuals in the population - as we have previously theorized? In order to look at this possibility, we modfiy the parameters of hospital capacity (less ICU beds) and the benefit of recovered patients $w_r \uparrow$, \textit{ceteris paribus}. This results in added weight to the smoothing of hospital capacity, which is due to group 2, and the decrease in infections in the future, with the rise of recovered patients. Our results in figure \Cref{fig:recovery} show, that the death rate declines are notable for all groups involved. 
+\input{plots/recovery}
+We can summarize these in the below table \Cref{tab:rates} as well: 
+\begin{table}[h!]
+\centering
+ \begin{tabular}{||c c||} 
+
+ \hline
+ Chance / Baseline & Deliberate  \\ [0.5ex] 
+ \hline\hline
+ 0.700\% & nan  \\ 
+ 0.142\% & 1.666\%  \\ [1ex] 
+ \hline
+ \end{tabular}
+ \caption{Death rates for individuals with only one group without dynamism (upper row) and additional dynamic group (lower row)}
+ \label{tab:rates}
+\end{table}
+
+As can be seen, we achieve massive gains for the chance infections, while deliberate infections bear the brunt. However, for the first time, we have a lower overall death rate of $0.600\%$, as $30\%$ of individual belong to group 2. This means, that there actually exists a social benefit scenario, though not a pareto-improving one. 
+
+
+\section{Conclusion}
+
+Our results offer insights into how far even a relatively small percentage of individuals aiming to maximize their own utility are able to indirectly better the outcome for the whole population. This almost never actually benefits the group of deliberate infection seekers themselves: they suffer from a higher death rate in all circumstances. However, the death rate of the non-dynamic group benefits from the smoothing of hospital utilization and increase in recovered individuals. This can even lead to a social benefit, where the overall death rate sinks due to the actions of the dynamic group. 
+
+
+This lack of improvement in the death rates for group 2 must however not only be interpreted in a negative light. It is fathomable, that these actions would in real life constitute revealed preference for more freedom, in exchange for higher chance of death. We did not unfortunately include this utility calculation in our model. 
+
+For macro pandemic related policy, our results implicate more individual level decision making and a more laissez-faire approach of pandemic management in the less severe periods of the year. Furthermore, it stresses the need for intrinsic preferences to be respected, as the trade-off of chance of death and freedom can be harnessed for improvements for all of society. 
+
+What we should be aware of, in game theoretic perspective, is that the results have to be strictly positive for the non-dynamic group, in order to be justifiable. Else, the creation of the underlying game of deliberate infection would lead to a health deprivation for passive individuals, that have no actions to play in order to counter it. 
+
+The caveat of our simulation is in the simplistic assumption, that optimal decision can be made and are carried out by agents in a coordinated and incremental fashion. The lack of clear data regarding transmission, severe infection and hospital capacities towards the beginning of past pandemics suggest, that in order to this coordinated decision making process to become effective, initial data needs to be revealed. Additionally, in a pandemic, the illness can quickly mutate and recovered indviduals be infected again. 
+
+\newpage
+\printbibliography
+
+\end{document}
+
